@@ -10,18 +10,16 @@ type dataType = {
     value: string
 }
 
+interface TreemapProps {
+    currentStepIndex: number | null
+}
 
-// interface TreemapProps {
-//     currentStepIndex: number | null
-//     stepIndex: number | null
-// }
-
-const Treemap = () => {
+const Treemap = ({ currentStepIndex }: TreemapProps) => {
     const ref = useRef<HTMLDivElement | null>(null);
-    // console.log(currentStepIndex)
-    // console.log(stepIndex)
+    // console.log("This rerendered" , currentStepIndex)
 
     useEffect(() => {
+        // console.log("This rerendered", currentStepIndex)
         const refCurrent = ref.current!
         const svg = d3.select(refCurrent).select('svg');
         const margin = 20
@@ -29,26 +27,33 @@ const Treemap = () => {
         const width = refCurrent.clientWidth - margin;
 
         d3.dsv(",", data).then(data => {
-            // console.log(data)
 
             let root = d3.stratify()
                 .id((d: unknown) => ((d as dataType).name))
                 .parentId((d: unknown) => ((d as dataType).parent))(data)
             root.sum((d: unknown) => (+(d as dataType).value))
 
+
             d3.treemap().size([width, height]).padding(4)(root)
 
-            // console.log(root.leaves())
-
             svg.selectAll('rect').data(root.leaves()).enter().append("rect")
+                .attr('class', 'squares')
+                .attr("id", (d, i) => i)
                 .attr('x', (d: unknown) => (d as { x0: number }).x0)
                 .attr('y', (d: unknown) => (d as { y0: number }).y0)
                 .attr('width', (d: unknown) => ((d as { x1: number }).x1 - (d as { x0: number }).x0))
                 .attr('height', (d: unknown) => ((d as { y1: number }).y1 - (d as { y0: number }).y0))
-                // .style('opacity', currentStepIndex === stepIndex ? 1 : 1)
+                .style("opacity", 1)
                 .style("stroke", "black")
-                .style("fill", "#69b3a2")
+                .style("fill", (d) => d.id === "grp1" || d.id === "grp2" ? "#69b3a2" : d.id === "grp3" || d.id === "grp4" ? "#d2def9" : "#fff8e5")
 
+            d3.selectAll('.squares')
+                // @ts-ignore          
+                .style('opacity', (d, i) => {
+                    if (currentStepIndex !== null && currentStepIndex > 0) {
+                        return (i) === currentStepIndex ? 1 : 0.2
+                    }
+                })
 
 
             svg.selectAll('text')
@@ -65,12 +70,7 @@ const Treemap = () => {
                 .attr("font-size", "15px")
                 .attr('fill', "white")
         })
-
-
-
-    }
-
-    )
+    }, [currentStepIndex])
 
 
 

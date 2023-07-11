@@ -54,6 +54,22 @@ const StackedBarChart = () => {
 
             // @ts-ignore
             let stackedData = d3.stack().keys(subgroups)(data)
+            console.log(stackedData[0].key)
+
+            svg.append("g")
+                .selectAll("g")
+                .data(stackedData)
+                .enter().append("g")
+                // @ts-ignore
+                .attr("fill", function (d) { return color(d.key); })
+                .selectAll("rect")
+                .data(function (d) { return d; })
+                .enter().append("rect")
+                // @ts-ignore
+                .attr("x", function (d) { return x(d.data.group); })
+                .attr("y", function (d) { return y(d[1]); })
+                .attr("height", function (d) { return y(d[0]) - y(d[1]); })
+                .attr("width", x.bandwidth())
 
 
         })
